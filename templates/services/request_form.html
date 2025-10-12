@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Contactar proveedor</h3>
+<form method="post" class="mt-3">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary">Enviar solicitud</button>
+  <a class="btn btn-light" href="javascript:history.back()">Cancelar</a>
+</form>
+{% endblock %}
