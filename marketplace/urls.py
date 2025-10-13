@@ -17,17 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
-
-from services.views import ServiceListView, ServiceDetailView, ServiceCreateView,  ServiceRequestCreateView
+from services.views import ServiceListView, ServiceDetailView, ServiceCreateView,  ServiceRequestCreateView, SignUpView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     path("accounts/login/",  auth_views.LoginView.as_view(),  name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("accounts/signup/", SignUpView.as_view(), name="signup"),
     path("", ServiceListView.as_view(), name="home"),
     path("services/new/", ServiceCreateView.as_view(), name="service_new"),
     path("services/<int:pk>/", ServiceDetailView.as_view(), name="service_detail"),
     path("services/<int:pk>/contact/", ServiceRequestCreateView.as_view(), name="service_contact"),
+
 ]
 

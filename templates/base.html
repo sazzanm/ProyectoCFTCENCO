@@ -13,14 +13,16 @@
     <div class="ms-auto">
     
         {% if user.is_authenticated %}
-        <span class="me-2 text-muted">Hola, {{ user.username }}</span>
-        <a class="btn btn-primary me-2" href="{% url 'service_new' %}">Publicar</a>
-        <form action="{% url 'logout' %}" method="post" class="d-inline">
+          <span class="me-2 text-muted">Hola, {{ user.username }}</span>
+          <a class="btn btn-primary me-2" href="{% url 'service_new' %}">Publicar</a>
+
+          <form action="{% url 'logout' %}" method="post" class="d-inline">
             {% csrf_token %}
             <button class="btn btn-outline-secondary" type="submit">Salir</button>
-        </form>
+          </form>
         {% else %}
-        <a class="btn btn-outline-primary" href="{% url 'login' %}">Entrar</a>
+          <a class="btn btn-outline-primary me-2" href="{% url 'login' %}">Entrar</a>
+          <a class="btn btn-success" href="{% url 'signup' %}">Registrarse</a>
         {% endif %}
 
     </div>

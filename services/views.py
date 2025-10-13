@@ -1,7 +1,11 @@
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.contrib.auth import login
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.db import IntegrityError
 from .models import Service, Category, ServiceRequest
@@ -62,7 +66,7 @@ class ServiceDetailView(DetailView):
             "has_requested": has_requested,
             "requests_count": service.requests.count(),  # opcional para mostrar el total
         })
-        return ctx
+        return ctx  
 
 class ServiceCreateView(LoginRequiredMixin, CreateView):
     model = Service
@@ -102,3 +106,35 @@ class ServiceRequestCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("service_detail", kwargs={"pk": self.service_obj.pk})
 
 
+class ServiceDetailView(LoginRequiredMixin, DetailView):
+    model = Service
+    template_name = "services/detail.html"
+    # opcional: explícito; por defecto usa /accounts/login/
+    # login_url = "login"                # si quieres usar el nombre de la ruta
+    # redirect_field_name = "next"       # por defecto ya es "next"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        service = self.object
+        user = self.request.user
+
+        is_owner = user.is_authenticated and service.owner_id == user.id
+        has_requested = (user.is_authenticated
+                         and service.requests.filter(requester=user).exists())
+        ctx.update({
+            "is_owner": is_owner,
+            "has_requested": has_requested,
+            "requests_count": service.requests.count(),
+        })
+        return ctx  
+    
+class SignUpView(CreateView):
+    form_class = UserCreationForm
+    template_name = "registration/signup.html"
+    
+    def form_valid(self, form):
+        self.object = form.save()
+        login(self.request, self.object, backend='django.contrib.auth.backends.ModelBackend')
+        messages.success(self.request, "Cuenta creada e inicio de sesión exitoso.")
+        next_url = self.request.POST.get("next") or self.request.GET.get("next") or reverse("home")
+        return redirect(next_url)

@@ -8,3 +8,61 @@ wheels/
 
 # Virtual environments
 .venv
+
+# =======================
+# Python
+# =======================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# =======================
+# Virtual environments
+# =======================
+.venv/
+env/
+venv/
+ENV/
+
+# =======================
+# Django / SQLite
+# =======================
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# =======================
+# Build artifacts
+# =======================
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+
+# =======================
+# IDE / Editor settings
+# =======================
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# =======================
+# System / Logs
+# =======================
+*.log
+*.pot
+*.pyc
+*.mo
+*.orig
+
+# =======================
+# Environment variables
+# =======================
+.env
+*.env
+.env.*
