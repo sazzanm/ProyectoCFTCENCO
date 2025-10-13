@@ -31,7 +31,8 @@ HTML / CSS / JS
 
 python-dotenv (manejo de variables de entorno)
 
-⚙️ Instalación y configuración
+Instalación y configuración
+
 1 Clonar el repositorio
 git clone https://github.com/tu-usuario/marketplace_digi.git
 cd marketplace_digi
@@ -75,9 +76,9 @@ python manage.py runserver
 
 Luego abre en tu navegador:
 
-👉 http://127.0.0.1:8000/
+http://127.0.0.1:8000/
 
-🧩 Estructura del proyecto
+Estructura del proyecto
 marketplace_digi/
 │
 ├── marketplace/         # Configuración principal del proyecto
@@ -113,14 +114,14 @@ Reiniciar base de datos:
 rm db.sqlite3
 python manage.py migrate
 
-📊 Créditos y autoría
+Créditos y autoría
 
 Autor: Michel Valenzuela
 Carrera: Analista Programador
 Institución: CFT Cenco
 Año: 2025
 
-📜 Licencia
+Licencia
 
 Este proyecto se distribuye con fines académicos y educativos.
 Puedes usarlo y modificarlo libremente citando la fuente original.
