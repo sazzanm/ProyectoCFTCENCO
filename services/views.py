@@ -12,6 +12,26 @@ from .models import Service, Category, ServiceRequest
 from .forms import ServiceForm, ServiceRequestForm
 
 
+class LandingView(ListView):
+    """Landing page con categorías y servicios recientes."""
+    model = Service
+    template_name = "services/landing.html"
+
+    def get_queryset(self):
+        return (Service.objects
+                .select_related("category", "owner")
+                .filter(is_active=True)
+                .order_by("-created_at")[:6])
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["categories"] = Category.objects.all().order_by("name")
+        ctx["recent_services"] = self.get_queryset()
+        ctx["total_services"] = Service.objects.filter(is_active=True).count()
+        ctx["total_categories"] = Category.objects.count()
+        return ctx
+
+
 class ServiceListView(ListView):
     model = Service
     template_name = "services/list.html"
@@ -35,18 +55,11 @@ class ServiceListView(ListView):
         ctx["categories"] = Category.objects.all().order_by("name")
         ctx["selected_cat"] = self.request.GET.get("cat")
         ctx["q"] = self.request.GET.get("q", "")
-        return ctx
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["categories"] = Category.objects.all().order_by("name")
-        ctx["selected_cat"] = self.request.GET.get("cat")
-        ctx["q"] = self.request.GET.get("q", "")
-        # total robusto: si existe paginator úsalo, si no, cuenta el queryset
         ctx["total"] = ctx.get("paginator").count if ctx.get("paginator") else self.get_queryset().count()
         return ctx
 
-class ServiceDetailView(DetailView):
+
+class ServiceDetailView(LoginRequiredMixin, DetailView):
     model = Service
     template_name = "services/detail.html"
 
@@ -56,29 +69,30 @@ class ServiceDetailView(DetailView):
         user = self.request.user
 
         is_owner = user.is_authenticated and service.owner_id == user.id
-        has_requested = (
-            user.is_authenticated
-            and service.requests.filter(requester=user).exists()
-        )
-
+        has_requested = (user.is_authenticated
+                         and service.requests.filter(requester=user).exists())
         ctx.update({
             "is_owner": is_owner,
             "has_requested": has_requested,
-            "requests_count": service.requests.count(),  # opcional para mostrar el total
+            "requests_count": service.requests.count(),
         })
-        return ctx  
+        return ctx
+
 
 class ServiceCreateView(LoginRequiredMixin, CreateView):
     model = Service
     form_class = ServiceForm
     template_name = "services/form.html"
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("service_list")
+
     def form_valid(self, form):
         obj = form.save(commit=False)
         obj.owner = self.request.user
+        obj.save()
         messages.success(self.request, "Tu servicio fue publicado con éxito.")
-        return super().form_valid(form)
-    
+        return redirect(self.success_url)
+
+
 class ServiceRequestCreateView(LoginRequiredMixin, CreateView):
     model = ServiceRequest
     form_class = ServiceRequestForm
@@ -97,41 +111,36 @@ class ServiceRequestCreateView(LoginRequiredMixin, CreateView):
         obj.service = self.service_obj
         try:
             obj.save()
-            messages.success(self.request, "Solicitud enviada al proveedor.")   
+            messages.success(self.request, "Solicitud enviada al proveedor.")
         except IntegrityError:
             messages.info(self.request, "Ya habías enviado una solicitud a este servicio.")
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("service_detail", kwargs={"pk": self.service_obj.pk})
+        return redirect("service_detail", pk=self.service_obj.pk)
 
 
-class ServiceDetailView(LoginRequiredMixin, DetailView):
+class MyServicesView(LoginRequiredMixin, ListView):
+    """Vista personal: servicios del usuario y solicitudes recibidas."""
     model = Service
-    template_name = "services/detail.html"
-    # opcional: explícito; por defecto usa /accounts/login/
-    # login_url = "login"                # si quieres usar el nombre de la ruta
-    # redirect_field_name = "next"       # por defecto ya es "next"
+    template_name = "services/my_services.html"
+
+    def get_queryset(self):
+        return (Service.objects
+                .select_related("category")
+                .filter(owner=self.request.user)
+                .order_by("-created_at"))
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        service = self.object
-        user = self.request.user
+        ctx["requests_received"] = (ServiceRequest.objects
+                                    .select_related("service", "requester")
+                                    .filter(service__owner=self.request.user)
+                                    .order_by("-created_at")[:20])
+        return ctx
 
-        is_owner = user.is_authenticated and service.owner_id == user.id
-        has_requested = (user.is_authenticated
-                         and service.requests.filter(requester=user).exists())
-        ctx.update({
-            "is_owner": is_owner,
-            "has_requested": has_requested,
-            "requests_count": service.requests.count(),
-        })
-        return ctx  
-    
+
 class SignUpView(CreateView):
     form_class = UserCreationForm
     template_name = "registration/signup.html"
-    
+
     def form_valid(self, form):
         self.object = form.save()
         login(self.request, self.object, backend='django.contrib.auth.backends.ModelBackend')

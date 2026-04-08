@@ -1,10 +1,32 @@
 {% extends "base.html" %}
+{% block title %}Contactar — Marketplace Digital{% endblock %}
 {% block content %}
-<h3>Contactar proveedor</h3>
-<form method="post" class="mt-3">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-primary">Enviar solicitud</button>
-  <a class="btn btn-light" href="javascript:history.back()">Cancelar</a>
-</form>
+<div class="container py-4">
+  <div class="mk-form-card">
+    <div class="text-center mb-3">
+      <div class="auth-icon" style="background:linear-gradient(135deg, var(--success), #16a34a);">
+        <i class="bi bi-send"></i>
+      </div>
+      <h3>Contactar Proveedor</h3>
+      <p style="color:var(--gray-500);font-size:.9rem;">
+        Envía un mensaje a <strong>{{ view.service_obj.owner.username }}</strong>
+        sobre "{{ view.service_obj.title }}"
+      </p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_message" class="form-label">Mensaje (opcional)</label>
+        <textarea name="message" id="id_message" class="form-control" rows="4"
+                  placeholder="Hola, me interesa tu servicio. ¿Podrías darme más información?"></textarea>
+      </div>
+      <button class="btn btn-mk-success w-100" type="submit">
+        <i class="bi bi-send me-1"></i> Enviar Solicitud
+      </button>
+      <a class="btn btn-mk-outline w-100 mt-2"
+         href="{% url 'service_detail' view.service_obj.pk %}">Cancelar</a>
+    </form>
+  </div>
+</div>
 {% endblock %}

@@ -21,27 +21,38 @@ class MarketplaceTests(TestCase):
             is_active=True,
         )
 
-    def test_home_list_ok(self):
+    def test_landing_ok(self):
         url = reverse("home")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+
+    def test_home_list_ok(self):
+        url = reverse("service_list")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Servicios")
-        # muestra el servicio
         self.assertContains(resp, "Limpieza de hogar")
 
-    def test_detail_ok(self):
+    def test_detail_requires_login(self):
+        url = reverse("service_detail", args=[self.svc.pk])
+        resp = self.client.get(url)
+        # debe redirigir a login
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("login", resp.url)
+
+    def test_detail_ok_logged_in(self):
+        self.client.login(username="alice", password="s3cret")
         url = reverse("service_detail", args=[self.svc.pk])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Limpieza de hogar")
-        self.assertContains(resp, "Limpieza")  # categoría
+        self.assertContains(resp, "Limpieza")
 
     def test_create_requires_login(self):
         url = reverse("service_new")
         resp = self.client.get(url)
-        # debe redirigir a login
         self.assertEqual(resp.status_code, 302)
-        self.assertIn(reverse("login"), resp.url)
+        self.assertIn("login", resp.url)
 
     def test_create_service_logged_in(self):
         self.client.login(username="alice", password="s3cret")
@@ -55,6 +66,16 @@ class MarketplaceTests(TestCase):
         }
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
-        # ahora deberían existir 2 servicios
         self.assertEqual(Service.objects.count(), 2)
-        self.assertContains(resp, "Electricista domicilio")
+
+    def test_my_services_requires_login(self):
+        url = reverse("my_services")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_my_services_ok(self):
+        self.client.login(username="alice", password="s3cret")
+        url = reverse("my_services")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Limpieza de hogar")

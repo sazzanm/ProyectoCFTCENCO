@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Marketplace Digital — Servicios Locales en Chile{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container position-relative" style="z-index:2;">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1>Encuentra el servicio<br>que necesitas</h1>
+        <p class="lead mb-4">Conectamos a personas con profesionales locales. Gasfitería, electricidad, limpieza y mucho más, todo en un solo lugar.</p>
+        <div class="d-flex gap-3 flex-wrap mb-4">
+          <a href="{% url 'service_list' %}" class="btn btn-light btn-lg px-4" style="border-radius:12px;font-weight:700;">
+            <i class="bi bi-search me-2"></i>Explorar Servicios
+          </a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'service_new' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius:12px;font-weight:600;">
+              <i class="bi bi-plus-circle me-2"></i>Publicar Servicio
+            </a>
+          {% else %}
+            <a href="{% url 'signup' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius:12px;font-weight:600;">
+              <i class="bi bi-person-plus me-2"></i>Registrarse Gratis
+            </a>
+          {% endif %}
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-number">{{ total_services }}</span>
+            <span class="stat-label">Servicios activos</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">{{ total_categories }}</span>
+            <span class="stat-label">Categorías</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Gratuito</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+        <div style="font-size:8rem;opacity:.3;">
+          <i class="bi bi-people"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Cómo funciona -->
+<section class="container py-5">
+  <div class="text-center mb-4">
+    <h2 class="section-title">¿Cómo funciona?</h2>
+    <p class="section-subtitle">En 3 simples pasos</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="step-card">
+        <div class="step-icon bg-1"><i class="bi bi-search"></i></div>
+        <div class="step-number">Paso 1</div>
+        <h5 style="font-weight:700;">Busca</h5>
+        <p class="text-muted mb-0">Explora los servicios disponibles o filtra por categoría para encontrar exactamente lo que necesitas.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="step-card">
+        <div class="step-icon bg-2"><i class="bi bi-chat-dots"></i></div>
+        <div class="step-number">Paso 2</div>
+        <h5 style="font-weight:700;">Contacta</h5>
+        <p class="text-muted mb-0">Envía una solicitud directa al proveedor del servicio con un mensaje personalizado.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="step-card">
+        <div class="step-icon bg-3"><i class="bi bi-check-circle"></i></div>
+        <div class="step-number">Paso 3</div>
+        <h5 style="font-weight:700;">Contrata</h5>
+        <p class="text-muted mb-0">Coordina directamente con el profesional y concreta el servicio a tu medida.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categorías -->
+{% if categories %}
+<section class="py-5" style="background:var(--gray-100);">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="section-title">Categorías</h2>
+      <p class="section-subtitle">Encuentra servicios por área</p>
+    </div>
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+      {% for cat in categories %}
+        <a href="{% url 'service_list' %}?cat={{ cat.slug }}" class="category-pill">
+          <i class="bi bi-tag"></i> {{ cat.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Servicios Recientes -->
+{% if recent_services %}
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="section-title mb-0">Servicios Recientes</h2>
+      <p class="section-subtitle mb-0">Últimas publicaciones en la plataforma</p>
+    </div>
+    <a href="{% url 'service_list' %}" class="btn btn-mk-secondary">
+      Ver todos <i class="bi bi-arrow-right ms-1"></i>
+    </a>
+  </div>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for s in recent_services %}
+    <div class="col">
+      <div class="service-card">
+        <div class="card-body">
+          <span class="category-badge mb-2">
+            <i class="bi bi-tag-fill"></i> {{ s.category.name }}
+          </span>
+          <h5 class="card-title mt-2">{{ s.title }}</h5>
+          <p class="card-text">{{ s.description|truncatewords:20 }}</p>
+        </div>
+        <div class="card-footer">
+          <div>
+            <span class="owner-tag"><i class="bi bi-person"></i> {{ s.owner.username }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if s.price_from %}
+              <span class="price-tag">${{ s.price_from|floatformat:0|intcomma }}</span>
+            {% endif %}
+            <a href="{% url 'service_detail' s.pk %}" class="btn btn-mk-primary btn-sm">Ver</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA Final -->
+<section class="py-5 text-center" style="background: linear-gradient(135deg, var(--primary-bg), #dbeafe);">
+  <div class="container">
+    <h2 class="section-title">¿Tienes un servicio que ofrecer?</h2>
+    <p class="section-subtitle">Publica tu servicio gratis y llega a más personas</p>
+    {% if user.is_authenticated %}
+      <a href="{% url 'service_new' %}" class="btn btn-mk-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>Publicar Servicio
+      </a>
+    {% else %}
+      <a href="{% url 'signup' %}" class="btn btn-mk-primary btn-lg">
+        <i class="bi bi-person-plus me-2"></i>Crear Cuenta Gratis
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

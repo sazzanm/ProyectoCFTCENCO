@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Mis Servicios — Marketplace Digital{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="section-title mb-0">
+        <i class="bi bi-person-lines-fill me-2"></i>Mis Servicios
+      </h2>
+      <p class="section-subtitle mb-0">Gestiona tus publicaciones</p>
+    </div>
+    <a href="{% url 'service_new' %}" class="btn btn-mk-primary">
+      <i class="bi bi-plus-circle me-1"></i> Publicar Nuevo
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Mis publicaciones -->
+    <div class="col-lg-7">
+      <h5 style="font-weight:700;color:var(--gray-700);margin-bottom:1rem;">
+        <i class="bi bi-briefcase me-1"></i> Publicaciones ({{ object_list|length }})
+      </h5>
+
+      {% for s in object_list %}
+      <div class="my-service-row">
+        <div>
+          <h6 class="mb-1" style="font-weight:700;">{{ s.title }}</h6>
+          <span class="category-badge me-2">{{ s.category.name }}</span>
+          {% if s.price_from %}
+            <span class="price-tag">${{ s.price_from|floatformat:0|intcomma }}</span>
+          {% endif %}
+          {% if not s.is_active %}
+            <span class="badge bg-secondary ms-1">Oculto</span>
+          {% endif %}
+        </div>
+        <a href="{% url 'service_detail' s.pk %}" class="btn btn-mk-outline btn-sm">
+          <i class="bi bi-eye"></i> Ver
+        </a>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <i class="bi bi-folder2-open"></i>
+        <h5>Aún no tienes servicios publicados</h5>
+        <a href="{% url 'service_new' %}" class="btn btn-mk-primary mt-2">Publicar mi primer servicio</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Solicitudes recibidas -->
+    <div class="col-lg-5">
+      <h5 style="font-weight:700;color:var(--gray-700);margin-bottom:1rem;">
+        <i class="bi bi-envelope me-1"></i> Solicitudes recibidas
+      </h5>
+
+      {% for req in requests_received %}
+      <div class="request-item">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <strong style="font-size:.9rem;color:var(--primary);">
+            <i class="bi bi-person"></i> {{ req.requester.username }}
+          </strong>
+          <small class="text-muted">{{ req.created_at|timesince }} atrás</small>
+        </div>
+        <p class="mb-1" style="font-size:.85rem;color:var(--gray-600);">
+          Para: <a href="{% url 'service_detail' req.service.pk %}">{{ req.service.title }}</a>
+        </p>
+        {% if req.message %}
+          <p class="mb-0" style="font-size:.85rem;color:var(--gray-500);font-style:italic;">
+            "{{ req.message|truncatewords:20 }}"
+          </p>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <i class="bi bi-envelope-open"></i>
+        <p>No tienes solicitudes aún</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

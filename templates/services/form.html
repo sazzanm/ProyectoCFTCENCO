@@ -1,9 +1,74 @@
 {% extends "base.html" %}
+{% block title %}Publicar Servicio — Marketplace Digital{% endblock %}
 {% block content %}
-<h3>Publicar servicio</h3>
-<form method="post" class="mt-3">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button class="btn btn-primary">Guardar</button>
-</form>
+<div class="container py-4">
+  <div class="mk-form-card">
+    <div class="text-center mb-3">
+      <div class="auth-icon">
+        <i class="bi bi-plus-circle"></i>
+      </div>
+      <h3>Publicar Servicio</h3>
+      <p style="color:var(--gray-500);font-size:.9rem;">Completa la información para publicar tu servicio</p>
+    </div>
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Corrige los siguientes errores:</strong>
+        <ul class="mb-0 mt-1">
+          {% for field in form %}
+            {% for err in field.errors %}
+              <li>{{ field.label }}: {{ err }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label for="id_title" class="form-label">Título del servicio</label>
+        <input type="text" name="title" id="id_title" class="form-control"
+               placeholder="Ej: Electricista a domicilio" value="{{ form.title.value|default:'' }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="id_description" class="form-label">Descripción</label>
+        <textarea name="description" id="id_description" class="form-control" rows="4"
+                  placeholder="Describe tu servicio en detalle...">{{ form.description.value|default:'' }}</textarea>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="id_category" class="form-label">Categoría</label>
+          <select name="category" id="id_category" class="form-select" required>
+            <option value="">Seleccionar...</option>
+            {% for choice in form.category.field.queryset %}
+              <option value="{{ choice.pk }}" {% if form.category.value|stringformat:"s" == choice.pk|stringformat:"s" %}selected{% endif %}>{{ choice }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="id_price_from" class="form-label">Precio desde (CLP)</label>
+          <input type="number" name="price_from" id="id_price_from" class="form-control"
+                 placeholder="Ej: 25000" value="{{ form.price_from.value|default:'' }}">
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="form-check">
+          <input type="checkbox" name="is_active" id="id_is_active" class="form-check-input"
+                 {% if form.is_active.value != False %}checked{% endif %}>
+          <label class="form-check-label" for="id_is_active">Visible para todos</label>
+        </div>
+      </div>
+
+      <button class="btn btn-mk-primary w-100" type="submit">
+        <i class="bi bi-check-circle me-1"></i> Publicar Servicio
+      </button>
+      <a href="{% url 'service_list' %}" class="btn btn-mk-outline w-100 mt-2">Cancelar</a>
+    </form>
+  </div>
+</div>
 {% endblock %}

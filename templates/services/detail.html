@@ -1,28 +1,81 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% block title %}{{ object.title }} — Marketplace Digital{% endblock %}
 {% block content %}
-<h3>{{ object.title }}</h3>
-<p class="text-muted">
-  {{ object.category.name }} • Publicado por {{ object.owner.username }}
-</p>
-<p>{{ object.description }}</p>
-{% if object.price_from %}<p><strong>Desde:</strong> ${{ object.price_from|intcomma }}</p>{% endif %}
+<div class="container py-4">
 
-<p class="text-muted">
-  Solicitudes recibidas: {{ requests_count }}
-</p>
+  <!-- Breadcrumbs -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb" style="font-size:.9rem;">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'service_list' %}">Servicios</a></li>
+      <li class="breadcrumb-item active">{{ object.title|truncatewords:5 }}</li>
+    </ol>
+  </nav>
 
-{% if user.is_authenticated %}
-  {% if is_owner %}
-    <div class="alert alert-info">Eres el dueño de este servicio.</div>
-  {% elif has_requested %}
-    <div class="alert alert-secondary">Ya enviaste una solicitud a este servicio.</div>
-  {% else %}
-    <a class="btn btn-success" href="{% url 'service_contact' object.pk %}">Contactar</a>
-  {% endif %}
-{% else %}
-  <a class="btn btn-outline-primary" href="{% url 'login' %}?next={% url 'service_detail' object.pk %}">
-    Inicia sesión para contactar
-  </a>
-{% endif %}
+  <div class="row g-4">
+    <!-- Contenido principal -->
+    <div class="col-lg-8">
+      <div class="detail-hero">
+        <span class="category-badge mb-3">
+          <i class="bi bi-tag-fill"></i> {{ object.category.name }}
+        </span>
+        <h1 class="service-title mt-2">{{ object.title }}</h1>
+        <p class="text-muted mb-3">
+          <i class="bi bi-person"></i> Publicado por <strong>{{ object.owner.username }}</strong>
+          &middot; <i class="bi bi-clock"></i> {{ object.created_at|timesince }} atrás
+        </p>
+        <hr>
+        <div style="font-size:1.05rem;line-height:1.8;color:var(--gray-700);">
+          {{ object.description|linebreaks }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="detail-sidebar">
+        <!-- Precio -->
+        {% if object.price_from %}
+        <div class="text-center mb-3 pb-3" style="border-bottom:1px solid var(--gray-200);">
+          <span style="font-size:.85rem;color:var(--gray-500);">Desde</span>
+          <div class="price-tag" style="font-size:1.75rem;">${{ object.price_from|floatformat:0|intcomma }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Solicitudes -->
+        <div class="d-flex align-items-center gap-2 mb-3 pb-3" style="border-bottom:1px solid var(--gray-200);">
+          <i class="bi bi-envelope" style="color:var(--primary);font-size:1.2rem;"></i>
+          <span style="font-size:.9rem;color:var(--gray-600);">{{ requests_count }} solicitud(es) recibida(s)</span>
+        </div>
+
+        <!-- Acciones -->
+        {% if user.is_authenticated %}
+          {% if is_owner %}
+            <div class="alert alert-info mb-3">
+              <i class="bi bi-info-circle me-1"></i> Eres el dueño de este servicio.
+            </div>
+          {% elif has_requested %}
+            <div class="alert alert-secondary mb-3">
+              <i class="bi bi-check-circle me-1"></i> Ya enviaste una solicitud a este servicio.
+            </div>
+          {% else %}
+            <a class="btn btn-mk-success w-100 mb-3" href="{% url 'service_contact' object.pk %}">
+              <i class="bi bi-send me-1"></i> Contactar Proveedor
+            </a>
+          {% endif %}
+        {% else %}
+          <a class="btn btn-mk-primary w-100 mb-3"
+             href="{% url 'login' %}?next={% url 'service_detail' object.pk %}">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Inicia sesión para contactar
+          </a>
+        {% endif %}
+
+        <a href="{% url 'service_list' %}" class="btn btn-mk-outline w-100">
+          <i class="bi bi-arrow-left me-1"></i> Volver al catálogo
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
